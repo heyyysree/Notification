@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir":  "../../",
+    "outDir":   "dist",
+    "baseUrl":  "../../",
+    "paths": {
+      "@notification-engine/shared": ["packages/shared/src/index.ts"]
+    }
+  },
+  "include": [
+    "../../index.ts",
+    "../../connection/**/*.ts",
+    "../../lib/**/*.ts",
+    "../../processors/**/*.ts",
+    "../../repositories/**/*.ts",
+    "../../routes/**/*.ts",
+    "../../services/**/*.ts",
+    "../../workers/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

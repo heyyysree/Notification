@@ -1,0 +1,37 @@
+{
+  "name": "@notification-engine/ws-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build":         "tsc --project tsconfig.json",
+    "dev":           "ts-node-dev --respawn --transpile-only --project tsconfig.json ../../index.ts",
+    "start":         "node dist/index.js",
+    "clean":         "rm -rf dist",
+    "test":          "jest --runInBand",
+    "test:watch":    "jest --watch --runInBand",
+    "test:coverage": "jest --coverage --runInBand"
+  },
+  "dependencies": {
+    "@notification-engine/shared": "workspace:*",
+    "bullmq":      "^5.0.0",
+    "dotenv":      "^16.0.0",
+    "ioredis":     "^5.0.0",
+    "pg":          "^8.11.0",
+    "pino":        "^9.0.0",
+    "pino-pretty": "^11.0.0",
+    "ws":          "^8.16.0",
+    "zod":         "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/jest":                 "^29.0.0",
+    "@types/node":                 "^20.0.0",
+    "@types/pg":                   "^8.11.0",
+    "@types/ws":                   "^8.5.0",
+    "jest":                        "^29.0.0",
+    "testcontainers":              "^10.0.0",
+    "ts-jest":                     "^29.0.0",
+    "ts-node":                     "^10.9.0",
+    "ts-node-dev":                 "^2.0.0",
+    "typescript":                  "^5.4.0"
+  }
+}

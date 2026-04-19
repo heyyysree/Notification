@@ -1,0 +1,86 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────
+# Notification Engine — Local Development
+#
+# Starts the infrastructure layer only (Postgres + Redis).
+# Services run locally via `npm run dev` in each package.
+#
+# Usage:
+#   docker compose up -d               # start all infra
+#   docker compose logs -f postgres    # tail a specific service
+#   docker compose down -v             # stop + wipe volumes
+#
+# After starting, run the migration:
+#   psql postgresql://notifications:notifications@localhost:5432/notifications \
+#     -f db/migrations/001_initial_schema.sql
+# ─────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB:       notifications
+      POSTGRES_USER:     notifications
+      POSTGRES_PASSWORD: notifications
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Run migrations automatically on first start
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notifications -d notifications"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis ─────────────────────────────────────────────────────
+  # Used for:
+  #   - BullMQ queues (fan-out, ws-delivery, webhook-delivery)
+  #   - Dedup keys (dedup:{channel}:{eventId}:{userId})
+  #   - Circuit breaker counters (circuit:{webhookId})
+  #   - Ingestion idempotency (ingest:idem:{eventId})
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+        --save 60 1
+        --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Redis Commander (optional UI) ─────────────────────────────
+  # Browse queues and keys in the browser at http://localhost:8081
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    profiles:
+      # Only start with: docker compose --profile debug up -d
+      - debug
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: notification-engine
